@@ -1,4 +1,4 @@
-# simple-pbd
+# cloth-pbd
 Simple position-based-dynamic(PBD) cloth model.
 
 ## Algorithm
