@@ -682,7 +682,7 @@ class Model {
 let model = new Model();
 initParams = {
     lengthX: 10., lengthY: 10., 
-    cellsX: 20, cellsY: 25, dt: 0.01,
+    cellsX: 25, cellsY: 25, dt: 0.01,
     elasticK: 0.5, gravityG: 0.0,
     omega: 5.0, amplitude: 0.5
 };
