@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>PBD Model</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+    };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+    <header><h1>Elastic cloth PBD Model</h1></header>
+    <div class="container">
+        <canvas></canvas>
+        <div class="forms-wrapper">
+            <form action="#" id="params">
+                <h2>Simulation parameters</h2>
+                <div> 
+                    <label for="lengthX">LengthX</label><input type="number" name="lengthX" id="lengthX" step="any" min="1." value="1.5">
+                    <label for="lengthY">LengthY</label><input type="number" name="lengthY" id="lengthY" step="any" min="1." value="1.5">
+                    <label for="cellsX">CellsX</label><input type="number" name="cellsX" id="cellsX" min="4" value="4">
+                    <label for="cellsY">CellsY</label><input type="number" name="cellsY" id="cellsY" min="4" value="4">
+                    <label for="dt">Time step</label><input type="number" name="dt" id="dt" step="any" min="0." value="0.01">
+                </div>
+                <div>
+                    <label for="elasticK">Elasticity ($k\in [0,\:1]$)</label>
+                    <input type="number" name="elasticK" id="elasticK" step="any" min="0.0" max="1.0" value="0.8">
+                </div>
+                <div>                    
+                    <label for="gravityFlag">Gravity</label><input type="checkbox" name="gravityFlag" id="gravityFlag">
+                    <label for="gravityG">$g$</label>
+                    <input type="number" name="gravityG" id="gravityG" step="any" value="9.8" disabled>
+                </div>
+                <h3>Oscillating middle point $z(t) = A\sin\omega t$</h3>
+                <div>
+                    <label for="oscillationFlag">On</label><input type="checkbox" name="oscillationFlag" id="oscillationFlag" checked="">
+                    <label for="omega">$\omega$</label><input type="number" name="omega" id="omega" step="any" value="1.0" min="0.0">
+                    <label for="amplitude">$A$</label><input type="number" name="amplitude" id="amplitude" step="any" value="0.5">
+                </div>
+                <button type="submit">Set parameters</button>
+            </form>
+            <form action="#" id="run">
+                <div><label for="colorFlag">Mesh color groups</label><input type="checkbox" name="colorFlag" id="colorFlag"></div>
+                <button type="submit" id="runBtn" disabled>▶ Run</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="status" style="text-align:center;font-family:sans-serif;"></div>
+    <script src="model.js"></script>
+
+    <h2>Algorithm</h2>
+    <div>
+        <p>I follow the basic PBD algorithm <a href="#ref-1">[1]</a>.</p>
+        <div><img src="./images/code.png" alt="Edges color groups" width="400"></div>
+        Corner vertices are immobile and one middle vertex is moved externally, 
+        so they are supposed to have infinite masses $m_i = \infty, w_i = 1/m_i = 0$.
+        <h3>Constraints</h3>
+        <p>
+            For a distance constraint between adjacent vertices 
+            $C(\mathbf x_1,\mathbf x_2) = |\mathbf x_1 - \mathbf x_2| - d = 0$ corrections are as follows
+            $$\Delta \mathbf x_1 = -\frac{k\cdot w_1}{w_1 + w_2}C(\mathbf x_1,\mathbf x_2)\mathbf n,$$
+            $$\Delta \mathbf x_2 = \frac{k\cdot w_2}{w_1 + w_2}C(\mathbf x_1,\mathbf x_2)\mathbf n,$$
+            where $d$ - initial distance, $w_i = 1/m_i$ - inverse masses, $k\in(0,1]$ - stretching factor, 
+            $\mathbf n = (\mathbf x_1 - \mathbf x_2)/|\mathbf x_1 - \mathbf x_2|$ - unit vertor pointing from second to first particle.
+        </p>
+        <h3>Parallel projections</h3>
+        
+        <p>In order to perform corrections of coordinates on GPU we need to divide 
+        mesh edges into several groups with no adjacent edges. In this case different gpu processes would not change the same . 
+        This is performed via coloring the edges according to greedy algorithm <a href="#ref-2">[2]</a>.
+        The maximum number of colors is $6 + 1=7$ as the maximimum vertex degree is $6$.
+        </p>
+        <div>
+            <img src="./images/colorGroups.jpg" alt="Edges color groups" width="300">
+        </div>
+        <h3>References</h3>
+            <ol>
+                <li id="ref-1">
+                    Jan Bender, Matthias Müller, and Miles Macklin. 2017. A survey on position based dynamics, 2017. 
+                    In Proceedings of the European Association for Computer Graphics: Tutorials. 1–31.
+                </li>
+                <li id="ref-2">
+                    P. Yu, Z. Zhao, R. Wang, J. Pan, Real-time soft body dissection simulation with parallelized graph-based shape matching on gpu, 
+                    Comput. Methods Programs Biomed. 250 (2024),.
+                </li>
+            </ol>
+    </div>
+</body>
+</html>
