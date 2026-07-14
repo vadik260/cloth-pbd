@@ -144,7 +144,7 @@ class Model {
         try {
             let adapter = await navigator.gpu.requestAdapter();
             if (!adapter) {
-                document.getElementById('status').textContent = 'WebGPU не поддерживается';
+                document.getElementById('status').textContent = 'WebGPU is not supported';
                 return;
             }
             this.device = await adapter.requestDevice();
